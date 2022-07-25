@@ -1,0 +1,24 @@
+---
+- hosts: localhost
+  connection: local
+  
+  vars:
+    host: email-smtp.us-east-2.amazonaws.com
+    username: AKIAQY43FAYYIBN6X52W
+    password: "{{ lookup('env', 'EMAIL_PASSWORD') }}"
+    email_source: test@dragonslair.dev
+    email_dest:
+    - personone@dragonslayer.dev
+    - persontwo@dragonslayer.dev
+
+  tasks:
+  - name: Sending an e-mail using AWS Simple Email Service servers
+    community.general.mail:
+      host: "{{ host }}"
+      port: 587
+      username: "{{ username }}"
+      password: "{{ password }}"
+      from: test@dragonslair.dev
+      to: "{{ email_dest }}"
+      subject: Ansible-report
+      body: "System {{ ansible_hostname }} has been successfully provisioned."
