@@ -188,4 +188,26 @@ So now we can pull in the information we need, but it's not yet in the format we
 ```
 ansible -i inventory_file_lookup.yaml build_stage_1 -m debug -a msg="{{ email_dest | community.general.from_csv }}"
 ```
+Output:
+```
+stage1 | SUCCESS => {
+    "msg": [
+        {
+            "email": "johndoe@dragonslair.dev",
+            "first_name": "John",
+            "last_name": "Doe"
+        },
+        {
+            "email": "jackmcginnis@dragonslair.dev",
+            "first_name": "Jack",
+            "last_name": "McGinnis"
+        },
+        {
+            "email": "dragonslairpark@gmail.com",
+            "first_name": "DragonsLair",
+            "last_name": "Park"
+        }
+    ]
+}
+```
 
