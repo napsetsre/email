@@ -63,7 +63,7 @@ pip install ansible-builder
 
 You can also build an execution environment like you would any other container through definition files such as Dockerfiles.  The advantage to using Ansible Builder is a simpler way to define the specific collections, Python libraries, and packages that are necessary for your playbook without having to understand the intricacies of a Containerfile (Dockerfile).  If you prefer the lower-level Containerfile, you could also use Ansible-Builder to just generate that Containerfile, then build the container with the tool of your choice.
 
-Ansible Builder can build and tag the container for you.
+Ansible Builder can build and tag the container for you.  If you navigate to the `execution_environment` directory in this repository, you'll be able to run the following command in that directory.  The command defaults to defining the container based on the file named `execution-environment.yml` in the directory where the command is run.
 ```
 ansible-builder build --tag quay.io/hfenner/ee_mail
 ```
