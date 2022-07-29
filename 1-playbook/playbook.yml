@@ -10,6 +10,7 @@
     email_dest:
     - personone@dragonslayer.dev
     - persontwo@dragonslayer.dev
+    - dragonslairpark@gmail.com
 
   tasks:
   - name: Sending an e-mail using AWS Simple Email Service servers

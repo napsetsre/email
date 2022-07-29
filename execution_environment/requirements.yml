@@ -1,0 +1,10 @@
+---
+collections:
+  #For the mail module
+  - community.general
+  #For AWS parameter store
+  - amazon.aws
+  #For AWS parameter store
+  - community.aws
+  #To populate Ansible Automation Platform
+  - awx.awx
