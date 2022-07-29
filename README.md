@@ -30,6 +30,7 @@ The first lab is a simple playbook with the variables baked in.  In order to pre
     email_dest:
     - personone@dragonslayer.dev
     - persontwo@dragonslayer.dev
+    - dragonslairpark@gmail.com
 
   tasks:
   - name: Sending an e-mail using AWS Simple Email Service servers
@@ -92,5 +93,99 @@ Using version control will help provide a more consistent experience for the log
 ## Lab 2
 Now that you've seen a simple playbook run, it's time to explore how the same playbook logic can be used to target different environments with different requirements.
 
-The first modification we'll do is to remove the vars section of the playbook.  If  
+The major difference in this lab is our variables are being sourced from inventory files as opposed to the playbook itself. This makes targeting multiple environments simpler.  You could use an extra_vars file instead, but inventories capture not just variables, but allow you to easily scope those variables by target.
+
+First, let's remove the variables in the playbook as they will override variables in your inventory.  Variable precedence in Ansible is quite elaborate and has 22 levels of precedence (https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#ansible-variable-precedence).  General best practice is to define the variable once rather than relying on precedence.  In the case of roles, it's best practice to define variables in the role defaults directory as this will always be overridden by a variable declared anywhere else and allows the role to be consumed without having to define every option.
+
+Our playbook looks like this now:
+```
+---
+- hosts: build
+
+  tasks:
+  - name: Sending an e-mail using AWS Simple Email Service servers
+    community.general.mail:
+      host: "{{ host }}"
+      port: 587
+      username: "{{ username }}"
+      password: "{{ password }}"
+      from: "{{ email_source }}"
+      to: "{{ email_dest }}"
+      subject: Ansible-report
+      body: "System {{ ansible_hostname }} has been successfully provisioned."
+```
+
+Our variables do need to be defined somewhere, so let's create an inventory:
+
+migrated_vars_inventory.yaml
+```
+all:
+  children:
+    build:
+      hosts:
+        localhost:
+      vars:
+        ansible_connection: local
+        host: email-smtp.us-east-2.amazonaws.com
+        username: AKIAQY43FAYYIBN6X52W
+        password: "{{ lookup('env', 'EMAIL_PASSWORD') }}"
+        email_source: test@dragonslair.dev
+        email_dest:
+        - personone@dragonslayer.dev
+        - persontwo@dragonslayer.dev
+        - dragonslairpark@gmail.com
+        
+        email_dest: "{{ lookup('ansible.builtin.file', 'test.csv') | community.general.from_csv | map(attribute='email') }}"
+```
+Let's go ahead and run this again, but specify our newly create variable.  We should get the exact same outcome as the first lab.
+
+```
+ansible-navigator run 2-playbook/playbook.yml -i migrated_vars_inventory.yaml --eei quay.io/hfenner/ee_mail --mode stdout --penv EMAIL_PASSWORD
+```
+
+Static variables are simple which greatly aids readability and maintainability.  It can also hinder maintainability or cause duplication of data.  For example, you might want to notify a list of people that regularly changes.  Perhaps you have those emails saved in a spreadsheet, and want to be able to email those folks.  One quick option is to export that spreadsheet as a CSV.  We've included test.csv with three users to demonstrate this.
+
+First, let's pull that CSV into Ansible.  We'll use a lookup for this.  We could also use a module, but a lookup is more flexible because we can quickly use ad-hoc commands to filter the data to just a list of e-mails, and we don't need to change our actual playbook logic at all.
+
+```
+ansible localhost -m debug -a msg="{{ lookup('ansible.builtin.file', 'test.csv') }}"
+localhost | SUCCESS => {
+    "msg": "first_name,last_name,email\nJohn,Doe,johndoe@dragonslair.dev\nJack,McGinnis,jackmcginnis@dragonslair.dev\nDragonsLair,Park,dragonslairpark@gmail.com"
+}
+```
+
+That's cool, but we need a list of e-mail addresses so we will have to further parse this data.  Ansible leverages Jinja2 with some additional filters in order to reshape data.  Before we start, let's create a second inventory.  This makes it a little simpler parse a data structure especially when working with nested quotes (most shells make nested quotes difficult).  We're also going to rename the host because this inventory will target the same host with different variables as a demonstration.  If you name the host the same way in each group, you may find that variable precedence causes you headaches where the first group variables override other groups.
+
+inventory_file_lookup.yaml
+```
+all:
+  children:
+    build_stage_1:
+      hosts:
+        stage1:
+          ansible_host: localhost
+          ansible_connection: local
+      vars:
+        ansible_connection: local
+        host: email-smtp.us-east-2.amazonaws.com
+        username: AKIAQY43FAYYIBN6X52W
+        password: "{{ lookup('env', 'EMAIL_PASSWORD') }}"
+        email_source: test@dragonslair.dev
+        email_dest: "{{ lookup('ansible.builtin.file', 'test.csv') }}"
+```
+
+We can get the same lookup info by running our Ansible ad-hoc command as before, but add our new inventory with 
+```
+ansible -i inventory_file_lookup.yaml build_stage_1 -m debug -a msg="{{ email_dest }}"
+```
+```
+stage1 | SUCCESS => {
+    "msg": "first_name,last_name,email\nJohn,Doe,johndoe@dragonslair.dev\nJack,McGinnis,jackmcginnis@dragonslair.dev\nDragonsLair,Park,dragonslairpark@gmail.com"
+}
+```
+
+So now we can pull in the information we need, but it's not yet in the format we need.  Let's try adding a Jinja2 filter.  If you've ever used bash pipelines before, this will feel very similar.  You use the vertical pipe to pass the data from the lookup to a filter that can break CSV into a list of dictionaries.
+```
+ansible -i inventory_file_lookup.yaml build_stage_1 -m debug -a msg="{{ email_dest | community.general.from_csv }}"
+```
 

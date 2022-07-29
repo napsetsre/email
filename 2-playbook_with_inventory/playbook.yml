@@ -1,0 +1,14 @@
+---
+- hosts: build
+
+  tasks:
+  - name: Sending an e-mail using AWS Simple Email Service servers
+    community.general.mail:
+      host: "{{ host }}"
+      port: 587
+      username: "{{ username }}"
+      password: "{{ password }}"
+      from: "{{ email_source }}"
+      to: "{{ email_dest }}"
+      subject: Ansible-report
+      body: "System {{ ansible_hostname }} has been successfully provisioned."

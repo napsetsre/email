@@ -1,0 +1,49 @@
+all:
+  children:
+    build:
+      hosts:
+        prod:
+          ansible_host: localhost
+          ansible_connection: local
+      vars:
+        host: email-smtp.us-east-2.amazonaws.com
+        username: AKIAQY43FAYYIBN6X52W
+        password: "{{ lookup('env', 'EMAIL_PASSWORD') }}"
+        email_source: test@dragonslair.dev
+        email_dest: "{{ lookup('ansible.builtin.file', 'test.csv') | community.general.from_csv | map(attribute='email') }}"
+    build_stage_1:
+      hosts:
+        stage1:
+          ansible_host: localhost
+          ansible_connection: local
+      vars:
+        ansible_connection: local
+        host: email-smtp.us-east-2.amazonaws.com
+        username: AKIAQY43FAYYIBN6X52W
+        password: "{{ lookup('env', 'EMAIL_PASSWORD') }}"
+        email_source: test@dragonslair.dev
+        email_dest: "{{ lookup('ansible.builtin.file', 'test.csv') }}"
+    build_stage_2:
+      hosts:
+        stage2:
+          ansible_host: localhost
+          ansible_connection: local
+      vars:
+        ansible_connection: local
+        host: email-smtp.us-east-2.amazonaws.com
+        username: AKIAQY43FAYYIBN6X52W
+        password: "{{ lookup('env', 'EMAIL_PASSWORD') }}"
+        email_source: test@dragonslair.dev
+        email_dest: "{{ lookup('ansible.builtin.file', 'test.csv') | community.general.from_csv }}"
+    build_stage_3:
+      hosts:
+        stage3:
+          ansible_host: localhost
+          ansible_connection: local
+      vars:
+        ansible_connection: local
+        host: email-smtp.us-east-2.amazonaws.com
+        username: AKIAQY43FAYYIBN6X52W
+        password: "{{ lookup('env', 'EMAIL_PASSWORD') }}"
+        email_source: test@dragonslair.dev
+        email_dest: "{{ lookup('ansible.builtin.file', 'test.csv') | community.general.from_csv | map(attribute='email') }}"
