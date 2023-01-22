@@ -1,0 +1,12 @@
+all:
+  children:
+    build:
+      hosts:
+        localhost:
+      vars:
+        host: email-smtp.us-east-2.amazonaws.com
+        username: "{{ lookup('env', 'EMAIL_USERNAME') }}"
+        password: "{{ lookup('env', 'EMAIL_PASSWORD') }}"
+        email_source: "{{ lookup('env', 'EMAIL_SOURCE') }}"
+        se_term: John
+        email_dest: "{{ lookup('ansible.builtin.file', '/home/ec2-user/email/2-playbook_with_inventory/test.csv') | community.general.from_csv | map(attribute='email') }}"

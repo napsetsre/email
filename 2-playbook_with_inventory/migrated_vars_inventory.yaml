@@ -6,7 +6,10 @@ all:
       vars:
         ansible_connection: local
         host: email-smtp.us-east-2.amazonaws.com
-        username: AKIAQY43FAYYIBN6X52W
+        username: "{{ lookup('env', 'EMAIL_USERNAME' }}"
         password: "{{ lookup('env', 'EMAIL_PASSWORD') }}"
         email_source: test@dragonslair.dev
-        email_dest: "{{ lookup('ansible.builtin.file', 'test.csv') | community.general.from_csv | map(attribute='email') }}"
+        email_dest:
+        - personone@dragonslair.dev
+        - persontwo@dragonslair.dev
+

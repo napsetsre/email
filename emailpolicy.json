@@ -1,0 +1,39 @@
+{
+  "Version":"2012-10-17",
+  "Statement":[
+    {
+      "Sid":"AllowSESPuts",
+      "Effect":"Allow",
+      "Principal":{
+        "Service":"ses.amazonaws.com"
+      },
+      "Action":"s3:PutObject",
+      "Resource":"arn:aws:s3:::dragonslairemailbucket/*",
+      "Condition":{
+        "StringEquals":{
+          "AWS:SourceAccount":"053475608112",
+          "AWS:SourceArn": "arn:aws:ses:us-east-1:053475608112:receipt-rule-set/main:receipt-rule/s3"
+        }
+      }
+    }
+  ]
+}
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowSESPuts",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "ses.amazonaws.com"
+            },
+            "Action": "s3:PutObject",
+            "Resource": "arn:aws:s3:::dragonslayeremailbucket/*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:Referer": "053475608112"
+                }
+            }
+        }
+    ]
+}

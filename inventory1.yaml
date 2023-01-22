@@ -1,0 +1,11 @@
+all:
+  children:
+    build:
+      hosts:
+        localhost:
+      vars:
+        host: email-smtp.us-east-2.amazonaws.com
+        username: "{{ lookup('env', 'EMAIL_USERNAME') }}"
+        password: "{{ lookup('env', 'EMAIL_PASSWORD') }}"
+        email_source: "{{ lookup('env', 'EMAIL_SOURCE') }}"
+        email_dest: dragonslairpark@gmail.com
